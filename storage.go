@@ -145,13 +145,7 @@ func (s FileStorage) List() ([]Contact, error) {
 }
 
 func (s FileStorage) Add(c Contact) error {
-	file, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	var contactList []Contact
-	err = json.Unmarshal(file, &contactList)
+	contactList, err := readFileContents()
 	if err != nil {
 		return err
 	}
@@ -187,7 +181,6 @@ func (s FileStorage) Delete(id string) error {
 }
 
 func (s FileStorage) Edit(e EditContact) (Contact, error) {
-
 	var res Contact
 
 	contactList, err := readFileContents()
@@ -238,44 +231,6 @@ func (s FileStorage) ListFavs() ([]Contact, error) {
 
 	return resultData, err
 }
-
-/*func (s FileStorage) ChangeFavs(id string, action string) error {
-	contactList, err := readFileContents()
-	if err != nil {
-		return err
-	} // Internal
-
-	for i := range contactList {
-		if contactList[i].ID == id {
-			switch action {
-			case "add":
-				if contactList[i].Favorite == true {
-					return fmt.Errorf("contact \"%v\" is already in favorites", id)
-				}
-				contactList[i].Favorite = true
-				err = writeFileContents(contactList)
-				if err != nil {
-					return err
-				} // Internal
-				return nil
-			case "remove":
-				if contactList[i].Favorite == false {
-					return fmt.Errorf("contact \"%v\" is not in favorites already", id)
-				}
-				contactList[i].Favorite = false
-				err = writeFileContents(contactList)
-				if err != nil {
-					return err
-				} // Internal
-				return nil
-			default:
-				return fmt.Errorf("wrong request format, please use id={id}&action={add|remove}")
-			}
-		}
-	}
-
-	return fmt.Errorf("contact with ID \"%v\" not found", id)
-}*/
 
 func (s FileStorage) ChangeFavs(id string, action string) error {
 	contactList, err := readFileContents()
