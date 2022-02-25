@@ -1,4 +1,4 @@
-package main
+package storage
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ type Nationalize struct {
 	Country []CoProb `json:"country"`
 }
 
-func (c *Contact) fillMissingFields() error {
+func (c *Contact) FillMissingFields() error {
 	var err error
 
 	if c.Gender == "" {
@@ -152,7 +152,7 @@ func validateCountry(country string) error {
 	return nil
 }
 
-func (c *Contact) validate() error {
+func (c *Contact) Validate() error {
 	var err error
 
 	err = validateName(c.Name)
@@ -179,7 +179,7 @@ func (c *Contact) validate() error {
 }
 
 ///////////////////// editContact validation /////////////////////
-
+/*
 func (c *EditContact) validateName() error {
 	if c.Name == "" || len(c.Name) < 4 {
 		return errors.New("name must have more than 4 characters")
@@ -213,9 +213,9 @@ func (c *EditContact) validateCountry() error {
 	}
 
 	return nil
-}
+}*/
 
-func (c *EditContact) validate() error {
+func (c *EditContact) Validate() error {
 	var err error
 
 	if c.Name != "" {

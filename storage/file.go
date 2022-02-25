@@ -1,119 +1,15 @@
-package main
+package storage
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/sgnl-05/contactService/utils"
 	"io/ioutil"
+	"os"
 )
-
-type StorageInterface interface {
-	List() ([]Contact, error)
-	Add(Contact) error
-	Delete(string) error
-	Edit(EditContact) (Contact, error)
-	ListFavs() ([]Contact, error)
-	ChangeFavs(string, string) error
-}
-
-type MemoryStorage struct {
-	contactBook map[string]*Contact
-}
-
-type FileStorage struct{}
-
-///////////////////////////////////////// MEMORY METHODS /////////////////////////////////////////
-
-func (s MemoryStorage) List() ([]Contact, error) {
-	var jsonContacts []Contact
-
-	for _, v := range s.contactBook {
-		jsonContacts = append(jsonContacts, *v)
-	}
-
-	return jsonContacts, nil
-}
-
-func (s MemoryStorage) Add(c Contact) error {
-	s.contactBook[c.ID] = &c
-
-	return nil
-}
-
-func (s MemoryStorage) Delete(id string) error {
-	for k := range s.contactBook {
-		if k == id {
-			delete(s.contactBook, id)
-			return nil
-		}
-	}
-
-	return fmt.Errorf("no contact with ID: \"%v\"", id)
-}
-
-func (s MemoryStorage) Edit(e EditContact) (Contact, error) {
-	var res Contact
-
-	for k, v := range s.contactBook {
-		if k == e.ID {
-			if e.Name != "" {
-				v.Name = e.Name
-			}
-			if e.Phone != "" {
-				v.Phone = e.Phone
-			}
-			if e.Gender != "" {
-				v.Gender = e.Gender
-			}
-			if e.Country != "" {
-				v.Country = e.Country
-			}
-			res = *v
-			return res, nil
-		}
-	}
-
-	return res, fmt.Errorf("no contact with ID: \"%v\"", e.ID)
-}
-
-func (s MemoryStorage) ListFavs() ([]Contact, error) {
-	var resultData []Contact
-
-	for _, v := range s.contactBook {
-		if v.Favorite == true {
-			resultData = append(resultData, *v)
-		}
-	}
-
-	return resultData, nil
-}
-
-func (s MemoryStorage) ChangeFavs(id string, action string) error {
-	if _, ok := s.contactBook[id]; !ok {
-		return ErrContactNotFound
-	}
-
-	switch action {
-	case "add":
-		if s.contactBook[id].Favorite == true {
-			return ErrAlreadyFav
-		}
-		s.contactBook[id].Favorite = true
-	case "remove":
-		if s.contactBook[id].Favorite == false {
-			return ErrAlreadyNotFav
-		}
-		s.contactBook[id].Favorite = false
-	default:
-		return ErrWrongFormat
-	}
-
-	return nil
-}
-
-//////////////////////////////////////// FILE METHODS ////////////////////////////////////////
 
 func readFileContents() ([]Contact, error) {
 	var contacts []Contact
+	filePath := os.Getenv("LOCAL_FILENAME")
 
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -130,6 +26,7 @@ func writeFileContents(contacts []Contact) error {
 		return err
 	}
 
+	filePath := os.Getenv("LOCAL_FILENAME")
 	err = ioutil.WriteFile(filePath, dataBytes, 0644)
 	if err != nil {
 		return err
@@ -177,7 +74,7 @@ func (s FileStorage) Delete(id string) error {
 		}
 	}
 
-	return ErrBReq // Bad request
+	return utils.ErrContactNotFound // Bad request
 }
 
 func (s FileStorage) Edit(e EditContact) (Contact, error) {
@@ -208,7 +105,7 @@ func (s FileStorage) Edit(e EditContact) (Contact, error) {
 	}
 
 	if res.ID == "" {
-		return res, ErrBReq // Bad request
+		return res, utils.ErrContactNotFound // Bad request
 	}
 
 	err = writeFileContents(contactList)
@@ -243,7 +140,7 @@ func (s FileStorage) ChangeFavs(id string, action string) error {
 			switch action {
 			case "add":
 				if contactList[i].Favorite == true {
-					return ErrAlreadyFav
+					return utils.ErrAlreadyFav
 				}
 				contactList[i].Favorite = true
 				err = writeFileContents(contactList)
@@ -253,7 +150,7 @@ func (s FileStorage) ChangeFavs(id string, action string) error {
 				return nil
 			case "remove":
 				if contactList[i].Favorite == false {
-					return ErrAlreadyNotFav
+					return utils.ErrAlreadyNotFav
 				}
 				contactList[i].Favorite = false
 				err = writeFileContents(contactList)
@@ -262,10 +159,10 @@ func (s FileStorage) ChangeFavs(id string, action string) error {
 				} // Internal
 				return nil
 			default:
-				return ErrWrongFormat
+				return utils.ErrWrongFormat
 			}
 		}
 	}
 
-	return ErrContactNotFound
+	return utils.ErrContactNotFound
 }
