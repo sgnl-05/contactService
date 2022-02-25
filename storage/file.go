@@ -16,6 +16,10 @@ func readFileContents() ([]Contact, error) {
 		return contacts, err
 	}
 
+	if len(bytes) == 0 {
+		return contacts, err
+	}
+
 	err = json.Unmarshal(bytes, &contacts)
 	return contacts, err
 }
