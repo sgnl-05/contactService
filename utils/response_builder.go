@@ -30,6 +30,7 @@ func SendSuccessResponse(w http.ResponseWriter, result string, data interface{})
 	_, err = w.Write(jsonBytes)
 	if err != nil {
 		SendCustomError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 }
 
