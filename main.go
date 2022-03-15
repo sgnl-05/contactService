@@ -28,15 +28,4 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", r))
-
-	/*
-		http.HandleFunc("/api/list", h.ListContacts)
-		http.HandleFunc("/api/add", h.AddContact)
-		http.HandleFunc("/api/delete", h.DeleteContact)
-		http.HandleFunc("/api/edit", h.EditContact)
-		http.HandleFunc("/api/list-favs", h.ListFavorites)
-		http.HandleFunc("/api/change-fav", h.ChangeFavorite)
-
-		log.Fatal(http.ListenAndServe(":8080", nil))
-	*/
 }
