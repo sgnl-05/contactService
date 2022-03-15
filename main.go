@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/sgnl-05/contactService/api"
 	"log"
@@ -16,12 +17,26 @@ func main() {
 	var h api.ContactHandler
 	api.ParseFlags(&h)
 
-	http.HandleFunc("/api/list", h.ListContacts)
-	http.HandleFunc("/api/add", h.AddContact)
-	http.HandleFunc("/api/delete", h.DeleteContact)
-	http.HandleFunc("/api/edit", h.EditContact)
-	http.HandleFunc("/api/list-favs", h.ListFavorites)
-	http.HandleFunc("/api/change-fav", h.ChangeFavorite)
+	r := chi.NewRouter()
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/list", h.ListContacts)
+		r.Get("/delete", h.DeleteContact)
+		r.Post("/add", h.AddContact)
+		r.Post("/edit", h.EditContact)
+		r.Get("/list-favs", h.ListFavorites)
+		r.Get("/change-fav", h.ChangeFavorite)
+	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", r))
+
+	/*
+		http.HandleFunc("/api/list", h.ListContacts)
+		http.HandleFunc("/api/add", h.AddContact)
+		http.HandleFunc("/api/delete", h.DeleteContact)
+		http.HandleFunc("/api/edit", h.EditContact)
+		http.HandleFunc("/api/list-favs", h.ListFavorites)
+		http.HandleFunc("/api/change-fav", h.ChangeFavorite)
+
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	*/
 }

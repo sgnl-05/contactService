@@ -112,8 +112,6 @@ func (c *Contact) nationalize() error {
 	return nil
 }
 
-///////////////////// Contact validation /////////////////////
-
 func validateName(name string) error {
 	if name == "" || len(name) < 4 {
 		return errors.New("name must have more than 4 characters")
@@ -177,43 +175,6 @@ func (c *Contact) Validate() error {
 
 	return nil
 }
-
-///////////////////// editContact validation /////////////////////
-/*
-func (c *EditContact) validateName() error {
-	if c.Name == "" || len(c.Name) < 4 {
-		return errors.New("name must have more than 4 characters")
-	}
-
-	return nil
-}
-
-func (c *EditContact) validatePhone() error {
-	phoneReg, err := regexp.MatchString(`^\+7\d{10}$`, c.Phone)
-	if phoneReg == false || err != nil {
-		return errors.New("phone number must be in \"+7xxxxxxxxxx\" format")
-	}
-
-	return nil
-}
-
-func (c *EditContact) validateGender() error {
-	if c.Gender != "male" && c.Gender != "female" {
-		return errors.New("gender must be either \"male\" or \"female\", liberal")
-	}
-
-	return nil
-}
-
-func (c *EditContact) validateCountry() error {
-
-	countryReg, err := regexp.MatchString(`^[A-Z]{2}`, c.Country)
-	if countryReg == false || err != nil {
-		return errors.New("country code must consist of two uppercase letters")
-	}
-
-	return nil
-}*/
 
 func (c *EditContact) Validate() error {
 	var err error
