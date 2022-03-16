@@ -19,10 +19,6 @@ type ContactHandler struct {
 }
 
 func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "GET requests only")
-	}
-
 	h.mu.Lock()
 	allContacts, err := h.Storage.List()
 
@@ -37,15 +33,6 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) AddContact(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "POST requests only")
-		return
-	}
-	if r.Header.Get("content-type") != "application/json" {
-		utils.SendCustomError(w, http.StatusUnsupportedMediaType, "JSON only")
-		return
-	}
-
 	// Read request data
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close() //TODO Learn to catch errors in defer statements
@@ -58,13 +45,6 @@ func (h *ContactHandler) AddContact(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &newContactBody)
 	if err != nil {
 		utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	// Validation
-	err = newContactBody.Validate()
-	if err != nil {
-		utils.SendCustomError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -91,10 +71,6 @@ func (h *ContactHandler) AddContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "GET requests only")
-	}
-
 	// Read request data
 	keys := r.URL.Query()
 	idDelete := keys.Get("id")
@@ -117,13 +93,6 @@ func (h *ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) EditContact(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "POST requests only")
-	}
-	if r.Header.Get("content-type") != "application/json" {
-		utils.SendCustomError(w, http.StatusUnsupportedMediaType, "JSON only")
-	}
-
 	// Read request data
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -136,13 +105,6 @@ func (h *ContactHandler) EditContact(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &editContactBody)
 	if err != nil {
 		utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	// Validation
-	err = editContactBody.Validate()
-	if err != nil {
-		utils.SendCustomError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -165,10 +127,6 @@ func (h *ContactHandler) EditContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "GET requests only")
-	}
-
 	h.mu.Lock()
 	favContacts, err := h.Storage.ListFavs()
 	h.mu.Unlock()
@@ -182,10 +140,6 @@ func (h *ContactHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContactHandler) ChangeFavorite(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.SendCustomError(w, http.StatusMethodNotAllowed, "GET requests only")
-	}
-
 	// Read params
 	keys := r.URL.Query()
 	id := keys.Get("id")

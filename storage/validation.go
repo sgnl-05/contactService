@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sgnl-05/contactService/utils"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 )
@@ -150,30 +153,114 @@ func validateCountry(country string) error {
 	return nil
 }
 
-func (c *Contact) Validate() error {
-	var err error
+func ValidateNewContact(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	err = validateName(c.Name)
-	if err != nil {
-		return err
-	}
+		var c Contact
+		err = json.Unmarshal(body, &c)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	err = validatePhone(c.Phone)
-	if err != nil {
-		return err
-	}
+		err = validateName(c.Name)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	err = validateGender(c.Gender)
-	if err != nil {
-		return err
-	}
+		err = validatePhone(c.Phone)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	err = validateCountry(c.Country)
-	if err != nil {
-		return err
-	}
+		err = validateGender(c.Gender)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	return nil
+		err = validateCountry(c.Country)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		//err = r.Body.Close()
+		err = r.Body.Close()
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func ValidateExistingContact(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		var c Contact
+		err = json.Unmarshal(body, &c)
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if c.Name != "" {
+			err = validateName(c.Name)
+			if err != nil {
+				utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		if c.Phone != "" {
+			err = validatePhone(c.Phone)
+			if err != nil {
+				utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		if c.Gender != "" {
+			err = validateGender(c.Gender)
+			if err != nil {
+				utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		if c.Country != "" {
+			err = validateCountry(c.Country)
+			if err != nil {
+				utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+
+		//err = r.Body.Close()
+		err = r.Body.Close()
+		if err != nil {
+			utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (c *EditContact) Validate() error {
