@@ -26,7 +26,6 @@ func SendSuccessResponse(w http.ResponseWriter, result string, data interface{})
 		return
 	}
 
-	w.Header().Add("content-type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
 		SendCustomError(w, http.StatusInternalServerError, err.Error())
@@ -44,7 +43,6 @@ func SendSuccessResponseNoData(w http.ResponseWriter, result string) {
 		return
 	}
 
-	w.Header().Add("content-type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
 		SendCustomError(w, http.StatusInternalServerError, err.Error())

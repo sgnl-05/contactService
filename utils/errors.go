@@ -33,7 +33,6 @@ func SendCustomError(w http.ResponseWriter, status int, message string) {
 		return
 	}
 
-	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(status)
 	_, err = w.Write(jsonBytes)
 	if err != nil {
