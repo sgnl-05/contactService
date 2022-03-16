@@ -28,6 +28,7 @@ func main() {
 		r.Get("/delete", h.DeleteContact)
 		r.With(storage.ValidateNewContact).Post("/add", h.AddContact)
 		r.With(storage.ValidateExistingContact).Post("/edit", h.EditContact)
+		r.Post("/filter", h.Filter)
 		r.Get("/list-favs", h.ListFavorites)
 		r.Get("/change-fav", h.ChangeFavorite)
 	})

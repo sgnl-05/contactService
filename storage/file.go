@@ -5,6 +5,7 @@ import (
 	"github.com/sgnl-05/contactService/utils"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 func readFileContents() ([]Contact, error) {
@@ -120,9 +121,45 @@ func (s FileStorage) Edit(e EditContact) (Contact, error) {
 	return res, nil
 }
 
+func (s FileStorage) Filter(field string, value string) ([]Contact, error) {
+	var resultData []Contact
+	fullList, err := readFileContents()
+	if err != nil {
+		return resultData, err
+	}
+
+	switch field {
+	case "name":
+		for _, v := range fullList {
+			if strings.Contains(
+				strings.ToLower(v.Name),
+				strings.ToLower(value),
+			) {
+				resultData = append(resultData, v)
+			}
+		}
+		return resultData, nil
+	case "phone":
+		for _, v := range fullList {
+			if strings.Contains(
+				strings.ToLower(v.Phone),
+				strings.ToLower(value),
+			) {
+				resultData = append(resultData, v)
+			}
+		}
+		return resultData, nil
+	default:
+		return resultData, utils.ErrFilterWrongFormat
+	}
+}
+
 func (s FileStorage) ListFavs() ([]Contact, error) {
 	var resultData []Contact
 	contactList, err := readFileContents()
+	if err != nil {
+		return resultData, err
+	}
 
 	for _, v := range contactList {
 		if v.Favorite == true {
@@ -163,7 +200,7 @@ func (s FileStorage) ChangeFavs(id string, action string) error {
 				} // Internal
 				return nil
 			default:
-				return utils.ErrWrongFormat
+				return utils.ErrFavWrongFormat
 			}
 		}
 	}

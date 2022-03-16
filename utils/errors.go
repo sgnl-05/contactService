@@ -15,10 +15,11 @@ type errorResponse struct {
 }
 
 var (
-	ErrAlreadyFav      = errors.New("contact already in favorites")
-	ErrAlreadyNotFav   = errors.New("contact not in favorites already")
-	ErrWrongFormat     = errors.New("wrong request format, please use id={id}&action={add|remove}")
-	ErrContactNotFound = errors.New("contact not found")
+	ErrAlreadyFav        = errors.New("contact already in favorites")
+	ErrAlreadyNotFav     = errors.New("contact not in favorites already")
+	ErrFavWrongFormat    = errors.New("wrong request format, please use id={id}&action=add|remove")
+	ErrFilterWrongFormat = errors.New("wrong request format, please use field=name|phone&value={string}")
+	ErrContactNotFound   = errors.New("contact not found")
 )
 
 func SendCustomError(w http.ResponseWriter, status int, message string) {

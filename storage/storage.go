@@ -27,11 +27,17 @@ type EditContact struct {
 	Country string `json:"country"`
 }
 
+type FilterRequest struct {
+	Field string `json:"field"`
+	Value string `json:"value"`
+}
+
 type StorageInterface interface {
 	List() ([]Contact, error)
 	Add(Contact) error
 	Delete(string) error
 	Edit(EditContact) (Contact, error)
+	Filter(string, string) ([]Contact, error)
 	ListFavs() ([]Contact, error)
 	ChangeFavs(string, string) error
 }

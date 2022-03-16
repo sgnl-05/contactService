@@ -124,6 +124,52 @@ func (s ElasticStorage) Edit(e EditContact) (Contact, error) {
 	return res, nil
 }
 
+func (s ElasticStorage) Filter(field string, value string) ([]Contact, error) {
+	var res []Contact
+	var searchCond string
+
+	switch field {
+	case "name":
+		searchCond = `{
+	"query": {
+		"regexp": {
+			"name": ".*` + value + `.*"
+			}
+		}
+	}`
+	case "phone":
+		searchCond = `{
+	"query": {
+		"regexp": {
+			"phone": ".*` + value + `.*"
+			}
+		}
+	}`
+	default:
+		return res, utils.ErrFilterWrongFormat
+	}
+
+	response, err := s.client.Search(
+		s.client.Search.WithIndex(IndexName),
+		s.client.Search.WithBody(strings.NewReader(searchCond)),
+	)
+	if err != nil {
+		return res, err
+	}
+
+	var responseBody eContactHitsUp
+	err = json.NewDecoder(response.Body).Decode(&responseBody)
+	if err != nil {
+		return res, err
+	}
+
+	for i := range responseBody.Hits.Hits {
+		res = append(res, responseBody.Hits.Hits[i].Source)
+	}
+
+	return res, nil
+}
+
 func (s ElasticStorage) ListFavs() ([]Contact, error) {
 	var list []Contact
 
@@ -192,7 +238,7 @@ func (s ElasticStorage) ChangeFavs(id string, action string) error {
 			} // Internal
 			return nil
 		default:
-			return utils.ErrWrongFormat
+			return utils.ErrFavWrongFormat
 		}
 	}
 
