@@ -25,7 +25,7 @@ func ParseFlags(h *ContactHandler) {
 		fmt.Println("Store in Elastic")
 		h.Storage = storage.NewElasticStorage()
 	default:
-		fmt.Println("Fuck are you writing?")
+		fmt.Println("Available -d key values: memory|file|elastic")
 		return
 	}
 }

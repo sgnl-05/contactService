@@ -262,37 +262,3 @@ func ValidateExistingContact(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-func (c *EditContact) Validate() error {
-	var err error
-
-	if c.Name != "" {
-		err = validateName(c.Name)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.Phone != "" {
-		err = validatePhone(c.Phone)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.Gender != "" {
-		err = validateGender(c.Gender)
-		if err != nil {
-			return err
-		}
-	}
-
-	if c.Country != "" {
-		err = validateCountry(c.Country)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}

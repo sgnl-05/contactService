@@ -1,6 +1,9 @@
 package storage
 
-import "github.com/sgnl-05/contactService/utils"
+import (
+	"github.com/sgnl-05/contactService/utils"
+	"strings"
+)
 
 func (s MemoryStorage) List() ([]Contact, error) {
 	var jsonContacts []Contact
@@ -54,6 +57,35 @@ func (s MemoryStorage) Edit(e EditContact) (Contact, error) {
 	return res, utils.ErrContactNotFound
 }
 
+func (s MemoryStorage) Filter(field string, value string) ([]Contact, error) {
+	var resultData []Contact
+
+	switch field {
+	case "name":
+		for _, v := range s.ContactBook {
+			if strings.Contains(
+				strings.ToLower(v.Name),
+				strings.ToLower(value),
+			) {
+				resultData = append(resultData, *v)
+			}
+		}
+		return resultData, nil
+	case "phone":
+		for _, v := range s.ContactBook {
+			if strings.Contains(
+				strings.ToLower(v.Phone),
+				strings.ToLower(value),
+			) {
+				resultData = append(resultData, *v)
+			}
+		}
+		return resultData, nil
+	default:
+		return resultData, utils.ErrFilterWrongFormat
+	}
+}
+
 func (s MemoryStorage) ListFavs() ([]Contact, error) {
 	var resultData []Contact
 
@@ -83,7 +115,7 @@ func (s MemoryStorage) ChangeFavs(id string, action string) error {
 		}
 		s.ContactBook[id].Favorite = false
 	default:
-		return utils.ErrWrongFormat
+		return utils.ErrFavWrongFormat
 	}
 
 	return nil

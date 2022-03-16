@@ -29,7 +29,7 @@ func (h *ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendSuccessResponse(w, fmt.Sprintf("Full list of contacts"), allContacts)
+	utils.SendSuccessResponse(w, "Full list of contacts", allContacts)
 }
 
 func (h *ContactHandler) AddContact(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +67,7 @@ func (h *ContactHandler) AddContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseBody := []storage.Contact{newContactBody}
-	utils.SendSuccessResponse(w, fmt.Sprintf("New contact successfully added"), responseBody)
+	utils.SendSuccessResponse(w, "New contact successfully added", responseBody)
 }
 
 func (h *ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
@@ -126,6 +126,37 @@ func (h *ContactHandler) EditContact(w http.ResponseWriter, r *http.Request) {
 	utils.SendSuccessResponse(w, fmt.Sprintf("Contact \"%v\" successfully updated", editContactBody.ID), responseBody)
 }
 
+func (h *ContactHandler) Filter(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var filterRequest storage.FilterRequest
+	err = json.Unmarshal(body, &filterRequest)
+	if err != nil {
+		utils.SendCustomError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if filterRequest.Field == "" || filterRequest.Value == "" {
+		utils.SendCustomError(w, http.StatusBadRequest, utils.ErrFilterWrongFormat.Error())
+		return
+	}
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	filterResult, err := h.Storage.Filter(filterRequest.Field, filterRequest.Value)
+	if err != nil {
+		utils.SendCustomError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.SendSuccessResponse(w, fmt.Sprintf("All contacts containing the filter substring in %v", filterRequest.Field), filterResult)
+}
+
 func (h *ContactHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
 	h.mu.Lock()
 	favContacts, err := h.Storage.ListFavs()
@@ -136,7 +167,7 @@ func (h *ContactHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SendSuccessResponse(w, fmt.Sprintf("Full list of favorites"), favContacts)
+	utils.SendSuccessResponse(w, "Full list of favorites", favContacts)
 }
 
 func (h *ContactHandler) ChangeFavorite(w http.ResponseWriter, r *http.Request) {
@@ -144,12 +175,12 @@ func (h *ContactHandler) ChangeFavorite(w http.ResponseWriter, r *http.Request) 
 	keys := r.URL.Query()
 	id := keys.Get("id")
 	if id == "" {
-		utils.SendCustomError(w, http.StatusBadRequest, "wrong request format, please use id={ID}&action={add|remove}")
+		utils.SendCustomError(w, http.StatusBadRequest, utils.ErrFavWrongFormat.Error())
 		return
 	}
 	action := keys.Get("action")
 	if action == "" {
-		utils.SendCustomError(w, http.StatusBadRequest, "wrong request format, please use id={ID}&action={add|remove}")
+		utils.SendCustomError(w, http.StatusBadRequest, utils.ErrFavWrongFormat.Error())
 		return
 	}
 
@@ -164,7 +195,7 @@ func (h *ContactHandler) ChangeFavorite(w http.ResponseWriter, r *http.Request) 
 		} else if errors.Is(err, utils.ErrAlreadyNotFav) {
 			utils.SendCustomError(w, http.StatusBadRequest, fmt.Sprintf("contact \"%v\" is not in favorites already", id))
 			return
-		} else if errors.Is(err, utils.ErrWrongFormat) {
+		} else if errors.Is(err, utils.ErrFavWrongFormat) {
 			utils.SendCustomError(w, http.StatusBadRequest, err.Error())
 			return
 		} else if errors.Is(err, utils.ErrContactNotFound) {
