@@ -17,7 +17,6 @@ func main() {
 	}
 
 	var h api.ContactHandler
-	//h.Storage = storage.FileStorage{}
 	api.ParseFlags(&h)
 
 	r := chi.NewRouter()
