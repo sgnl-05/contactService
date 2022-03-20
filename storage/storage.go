@@ -56,7 +56,6 @@ type ElasticStorage struct {
 
 func NewElasticStorage() ElasticStorage {
 	var esObject ElasticStorage
-	//esObject := new(ElasticStorage)
 
 	cfg := elasticsearch.Config{
 		Addresses: []string{
