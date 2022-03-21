@@ -1,14 +1,40 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jessevdk/go-flags"
 	"github.com/joho/godotenv"
 	"github.com/sgnl-05/contactService/api"
 	"github.com/sgnl-05/contactService/storage"
 	"log"
 	"net/http"
+	"os"
 )
+
+type options struct {
+	StorageType string `short:"d" description:"Data storage type" choice:"memory" choice:"file" choice:"elastic" required:"true"`
+}
+
+func parseFlags(h *api.ContactHandler, o options) {
+	switch o.StorageType {
+	case "memory":
+		fmt.Println("Store in memory")
+		h.Storage = storage.MemoryStorage{
+			ContactBook: make(map[string]*storage.Contact),
+		}
+	case "file":
+		fmt.Println("Store in local file")
+		h.Storage = storage.FileStorage{}
+	case "elastic":
+		fmt.Println("Store in Elastic")
+		h.Storage = storage.NewElasticStorage()
+	default:
+		fmt.Println("Available -d key values: memory|file|elastic")
+		return
+	}
+}
 
 func main() {
 	err := godotenv.Load("config.env")
@@ -17,7 +43,14 @@ func main() {
 	}
 
 	var h api.ContactHandler
-	api.ParseFlags(&h)
+	var o options
+
+	if _, err := flags.Parse(&o); err != nil {
+		fmt.Printf("Parse args error %+v", err)
+		os.Exit(1)
+	}
+
+	parseFlags(&h, o)
 
 	r := chi.NewRouter()
 	r.Use(middleware.AllowContentType("application/json"))
